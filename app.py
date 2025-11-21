@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from ucitaj import ucitaj_podatke
+from dohvat_podataka import ucitaj_podatke
 
 SHEET_URL = st.secrets["sheet_url"]
 SHEET_NAME = "filmovi"
@@ -61,3 +61,4 @@ st.table(top3)
 
             
         
+
