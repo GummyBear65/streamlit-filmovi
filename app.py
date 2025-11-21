@@ -41,12 +41,12 @@ st.dataframe(filtrirani)
 #==============================================================================
 st.subheader("Brisanje filmova")
 
-filmovi_opcije = df.apply(lambda row: f"{row["Naslov"]} ({row["Godina"]})", axis=1).tolist()
+filmovi_opcije = df.apply(lambda row: f"{row['Naslov']} ({row['Godina']})", axis=1).tolist()
 film_za_brisanje = st.selectbox("Odaberi film za brisanje", options=filmovi_opcije)
 
 if st.button("Izbriši film"):
     for idx, row in df.iterrows():
-        if f"{row["Naslov"]} ({row["Godina"]})" == film_za_brisanje:
+        if f"{row['Naslov']} ({row['Godina']})" == film_za_brisanje:
             worksheet.delete_rows(idx + 2)
             st.success(f"Film je uspješno izbrisan")
             st.rerun()
@@ -54,3 +54,4 @@ if st.button("Izbriši film"):
 st.subheader("TOP 3 FILMA")
 top3= df.sort_values(by = "Ocjena", ascending = False).head(3)
 st.table(top3)
+
