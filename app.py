@@ -1,74 +1,63 @@
 import streamlit as st
 import pandas as pd
-from gspread import service_account
-from gspread.exceptions import APIError
+from ucitaj import ucitaj_podatke
 
-# --------------------------------------------------------------------------
-# Postavke
-# --------------------------------------------------------------------------
-SHEET_URL = st.secrets["sheet_url"]  # URL Google Sheeta
+SHEET_URL = st.secrets["sheet_url"]
 SHEET_NAME = "filmovi"
+df, worksheet = ucitaj_podatke(SHEET_URL, SHEET_NAME)
 
-# --------------------------------------------------------------------------
-# Dohvat podataka iz Google Sheets
-# --------------------------------------------------------------------------
-@st.cache_data
-def load_data():
-    try:
-        # Autentifikacija preko Service Account JSON (Streamlit Secrets)
-        sa = service_account(filename=None)  # filename=None → koristi st.secrets["gcp_service_account"]
-        sh = sa.open_by_url(SHEET_URL)
-        worksheet = sh.worksheet(SHEET_NAME)
-        df = pd.DataFrame(worksheet.get_all_records())
-        # Pretvorba u numeričke tipove
-        df["Godina"] = pd.to_numeric(df["Godina"], errors="coerce").fillna(0).astype(int)
-        df["Ocjena"] = pd.to_numeric(df["Ocjena"], errors="coerce").fillna(0).astype(int)
-    except Exception:
-        # Ako nije moguće spojiti se, vraća mock podatke
-        data = {
-            "Naslov": ["Kum", "Iskupljenje u Shawshanku", "Pulp Fiction"],
-            "Godina": [1972, 1994, 1994],
-            "Žanr": ["Krimić/Drama", "Drama", "Krimić/Triler"],
-            "Ocjena": [10, 10, 9],
-        }
-        df = pd.DataFrame(data)
-        worksheet = None
-    return df, worksheet
+df["Godina"] = pd.to_numeric(df["Godina"])
+df["Ocjena"] = pd.to_numeric(df["Ocjena"])
 
-df, worksheet = load_data()
+st.title("Omiljeni filmovi")
 
-# --------------------------------------------------------------------------
-# Naslov
-# --------------------------------------------------------------------------
-st.title("🎬 Vaši omiljeni filmovi")
-st.markdown("---")
+st.subheader("Trenutni popis filmova")
+st.dataframe(df)
+#poglavlje za dodavanje filmova
+st.subheader("Dodaj novi film")
+naslov = st.text_input("Naslov")
+godina = st.number_input("Godina", step=1, format="%d")
+zanr = st.text_input("Žanr")
+ocjena = st.slider("Ocjena", 1, 10)
 
-# --------------------------------------------------------------------------
-# Dodavanje novog filma
-# --------------------------------------------------------------------------
-with st.expander("➕ Dodaj novi film"):
-    naslov = st.text_input("Naslov")
-    godina = st.number_input("Godina", step=1, format="%d", value=2020)
-    zanr = st.text_input("Žanr")
-    ocjena = st.slider("Ocjena", 1, 10, value=7)
+if st.button("Dodaj film"):
+    novi_red = [naslov, int(godina), zanr, ocjena]
+    worksheet.append_row(novi_red)
+    st.success("Film je uspješno dodan!")
+    st.rerun()
+#poglavlje za pretragu filmova
+st.subheader("Pretrazi filmove")
+filtrirani = df.copy()
 
-    if st.button("Dodaj film"):
-        if naslov and zanr and godina:
-            novi_red = [naslov, int(godina), zanr, int(ocjena)]
-            if worksheet:
-                try:
-                    worksheet.append_row(novi_red, value_input_option="USER_ENTERED")
-                    st.success(f"Film '{naslov}' uspješno dodan!")
-                except APIError as e:
-                    st.error(f"Greška pri dodavanju u Google Sheet: {e}")
-            else:
-                st.info(f"Film '{naslov}' bi bio dodan. (Trenutno koristite mock podatke)")
-        else:
-            st.warning("Molim unesi sve podatke.")
+zanr_filter = st.text_input("Pretraži po žanru")
+godina_filter = st.number_input("Pretraži po godini", step=1, format="%d")
 
-# --------------------------------------------------------------------------
-# Prikaz tablice
-# --------------------------------------------------------------------------
-st.subheader(f"📋 Popis filmova ({len(df)})")
-st.dataframe(df, width="stretch")
+if zanr_filter:
+    filtrirani = filtrirani[filtrirani["Žanr"].str.contains(zanr_filter, case=False, na=False)]
 
+if godina_filter:
+    filtrirani = filtrirani[filtrirani["Godina"] == int(godina_filter)]
+
+st.dataframe(filtrirani)
+#poglavlje za brisanje filmova
+st.subheader("Obriši film")
+
+filmovi_opcije = df.apply(lambda row: f"{row['Naslov']} ({row['Godina']})", axis=1).tolist()
+film_za_brisanje = st.selectbox("Odaberi film za brisanje", options=filmovi_opcije)
+
+if st.button("Obriši film"):
+    for idx, row in df.iterrows():
+        if f"{row['Naslov']} ({row['Godina']})" == film_za_brisanje:
+            worksheet.delete_rows(idx + 2)  # +2 zbog zaglavlja i 0-indeksiranja
+            st.success("Film je uspješno obrisan!")
+            st.rerun()
+
+#poglavlje za prikaz top 3 filmova
+st.subheader("TOP 3 FILMOVA")
+
+top3= df.sort_values(by="Ocjena", ascending=False).head(3)
+st.table(top3)
+
+
+            
+        
