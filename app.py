@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np # Dodano za bolju manipulaciju podacima
-from dohvat_podataka import dohvat_podataka # Pretpostavljamo da ova funkcija i dalje radi
+from dohvat_podataka import ucitaj_podatke # Pretpostavljamo da ova funkcija i dalje radi
 
 # ------------------------------------------------------------------------------
 # Postavke
@@ -19,7 +19,7 @@ def load_data(url, name):
     # Ovdje je 'dohvat_podataka' zamijenjen mock funkcijom za demonstraciju
     # Ako vaša aplikacija radi s Google Sheetsom, koristite originalnu funkciju
     try:
-        df, worksheet = dohvat_podataka(url, name)
+        df, worksheet = ucitaj_podatke(url, name)
     except:
         # Mock DataFrame za testiranje bez stvarne veze
         data = {'Naslov': ['Kum', 'Iskupljenje u Shawshanku', 'Pulp Fiction', 'Inception', 'Matrix'],
@@ -167,6 +167,7 @@ if not df.empty:
 
 else:
     st.info("Nema filmova za prikaz TOP 3.")
+
 
 
 
