@@ -44,7 +44,7 @@ df, worksheet = load_data(SHEET_URL, SHEET_NAME)
 # ------------------------------------------------------------------------------
 # Naslov
 # ------------------------------------------------------------------------------
-st.title("🎬 Moji omiljeni filmovi")
+st.title("🎬 Vaši omiljeni filmovi")
 st.markdown("---")
 
 # ------------------------------------------------------------------------------
@@ -166,3 +166,4 @@ if not df.empty:
 
 else:
     st.info("Nema filmova za prikaz TOP 3.")
+
