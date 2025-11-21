@@ -1,5 +1,3 @@
-git gub app.py 
-
 
 import streamlit as st
 import pandas as pd
@@ -169,5 +167,6 @@ if not df.empty:
 
 else:
     st.info("Nema filmova za prikaz TOP 3.")
+
 
 
