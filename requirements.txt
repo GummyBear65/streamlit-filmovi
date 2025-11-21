@@ -1,4 +1,7 @@
 streamlit
-gspread
 pandas
-google-auth
+numpy
+gspread>=6.9.0
+google-auth>=2.23.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.1.0
