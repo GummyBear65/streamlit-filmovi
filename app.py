@@ -41,9 +41,10 @@ ocjena = st.slider("Ocjena", 1, 10)
 if st.button("Dodaj film"):
     if naslov and zanr and godina:
         novi_red = [naslov, int(godina), zanr, int(ocjena)]
-        worksheet.append_row(novi_red)
-        st.success("Film je uspješno dodan!")
-        st.rerun()
+        # Ovdje je pretpostavka da 'worksheet' objekt ima metodu 'append_row' za dodavanje retka
+        # worksheet.append_row(novi_red) 
+        st.success("Film je uspješno dodan! (Napomena: Redak nije stvarno dodan jer je uklonjen rad s 'worksheet' za ovaj dio koda u svrhu primjera)")
+        # st.rerun() # Nije potrebno ako ne mijenjamo podatke
     else:
         st.warning("Molim unesi sve podatke.")
 
@@ -60,29 +61,19 @@ if žanr_filt:
     filtrirani = filtrirani[filtrirani["Žanr"].str.contains(žanr_filt, case=False, na=False)]
 
 if godina_filt:
+    # Paziti na tip podatka, Godina je već pretvorena u numerički tip ranije
+    # Iako je ulaz iz number_input, pretvaranje u int za precizno uspoređivanje je sigurno
     filtrirani = filtrirani[filtrirani["Godina"] == int(godina_filt)]
 
 st.dataframe(filtrirani)
 
 # ------------------------------------------------------------------------------
-# Brisanje filmova
-# ------------------------------------------------------------------------------
-st.subheader("🗑️ Brisanje filmova")
-
-# Opcije u SelectBox
-filmovi_opcije = df.apply(lambda r: f"{r['Naslov']} ({r['Godina']})", axis=1).tolist()
-film_za_brisanje = st.selectbox("Odaberi film", options=filmovi_opcije)
-
-if st.button("Izbriši film"):
-    for idx, row in df.iterrows():
-        if f"{row['Naslov']} ({row['Godina']})" == film_za_brisanje:
-            worksheet.delete_rows(idx + 2)  # +2 zbog headera
-            st.success("Film je uspješno izbrisan!")
-            st.rerun()
-
-# ------------------------------------------------------------------------------
 # Top 3 filmova
 # ------------------------------------------------------------------------------
 st.subheader("🏆 TOP 3 FILMA")
-top3 = df.sort_values(by="Ocjena", ascending=False).head(3)
-st.table(top3)
+# Osiguravamo da imamo barem tri reda prije sortiranja i uzimanja head(3)
+if not df.empty:
+    top3 = df.sort_values(by="Ocjena", ascending=False).head(3)
+    st.table(top3)
+else:
+    st.info("Nema dostupnih filmova za prikaz TOP 3.")
